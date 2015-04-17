@@ -31,7 +31,11 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.Jenkins;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -90,9 +94,21 @@ public final class AuthenticationTokens {
         if (credentials == null) {
             return null;
         }
+        // we want the best match first
+        SortedMap<Integer,AuthenticationTokenSource> matches = new TreeMap<Integer, AuthenticationTokenSource>(
+                Collections.reverseOrder());
         for (AuthenticationTokenSource<?, ?> source : Jenkins.getInstance()
                 .getExtensionList(AuthenticationTokenSource.class)) {
-            if (source.produces(type) && source.consumes(credentials)) {
+            Integer score = source.score(type, credentials);
+            if (score != null && !matches.containsKey(score)) {
+                // if there are two extensions with the same score, 
+                // then the first (i.e. highest Extension.ordinal should win)
+                matches.put(score, source);
+            }
+        }
+        // now try all the matches (form best to worst) until we get a conversion 
+        for (AuthenticationTokenSource<?,?> source: matches.values()) {
+            if (source.produces(type) && source.consumes(credentials)) { // redundant test, but for safety
                 AuthenticationTokenSource<? extends T, ? super C> s =
                         (AuthenticationTokenSource<? extends T, ? super C>) source;
                 T token = null;
@@ -110,6 +126,7 @@ public final class AuthenticationTokens {
                 }
             }
         }
+        
         return null;
     }
 }

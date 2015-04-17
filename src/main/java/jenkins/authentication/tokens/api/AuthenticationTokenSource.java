@@ -31,6 +31,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import edu.umd.cs.findbugs.annotations.When;
 import hudson.ExtensionPoint;
+import org.apache.commons.lang.ClassUtils;
 
 /**
  * Converts {@link Credentials} into authentication tokens
@@ -118,5 +119,41 @@ public abstract class AuthenticationTokenSource<T, C extends Credentials>
      */
     public final boolean consumes(@NonNull Credentials credentials) {
         return this.credentialsClass.isInstance(credentials) && matcher().matches(credentials);
+    }
+
+    /**
+     * Score the goodness of match.
+     * @param tokenClass the token class.
+     * @param credentials the credentials instance.
+     * @return the match score (higher the better) or {@code null} if not a match.
+     * @since 1.1
+     */
+    /*package*/ final Integer score(Class<?> tokenClass, Credentials credentials) {
+        if (!produces(tokenClass) || !consumes(credentials)) {
+            return null;
+        }
+        short producerScore;
+        if (this.tokenClass.equals(tokenClass)) {
+            producerScore = Short.MAX_VALUE;
+        } else {
+            if (this.tokenClass.isInterface()) {
+                // TODO compute a goodness of fit
+                producerScore = 0;
+            } else {
+                producerScore = (short)ClassUtils.getAllSuperclasses(tokenClass).indexOf(this.tokenClass);
+            }
+        }
+        short consumerScore;
+        if (this.credentialsClass.equals(credentials.getClass())) {
+            consumerScore = Short.MAX_VALUE;
+        } else {
+            if (this.credentialsClass.isInterface()) {
+                // TODO compute a goodness of fit
+                consumerScore = 0;
+            } else {
+                consumerScore = (short)ClassUtils.getAllSuperclasses(credentials.getClass()).indexOf(this.credentialsClass);
+            }
+        }
+        return ((int)producerScore) << 16 | (int)consumerScore;
     }
 }
