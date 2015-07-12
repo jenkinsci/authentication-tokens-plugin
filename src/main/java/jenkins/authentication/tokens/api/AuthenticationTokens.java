@@ -88,9 +88,26 @@ public final class AuthenticationTokens {
      * @param <C>         the type of credentials to convert,
      * @return the token or {@code null} if the credentials could not be converted.
      */
-    @SuppressWarnings("unchecked")
     @CheckForNull
     public static <T, C extends Credentials> T convert(@NonNull Class<T> type, @CheckForNull C credentials) {
+        return convert(type, credentials, null);
+    }
+    
+    /**
+     * Converts the supplied credentials into the specified token.
+     *
+     * @param type        the type of token to convert to.
+     * @param credentials the credentials instance to convert.
+     * @param <T>         the type of token to convert to.
+     * @param <C>         the type of credentials to convert,
+     * @param sourceMatcher Matcher of the {@link AuthenticationTokenSource}.
+     *                      Null means that there is no external restrictions.
+     * @return the token or {@code null} if the credentials could not be converted.
+     */
+    @CheckForNull
+    @SuppressWarnings("unchecked")
+    public static <T, C extends Credentials> T convert(@NonNull Class<T> type, 
+            @CheckForNull C credentials, @CheckForNull AuthenticationSourceMatcher sourceMatcher) {
         if (credentials == null) {
             return null;
         }
@@ -99,13 +116,22 @@ public final class AuthenticationTokens {
                 Collections.reverseOrder());
         for (AuthenticationTokenSource<?, ?> source : Jenkins.getInstance()
                 .getExtensionList(AuthenticationTokenSource.class)) {
+            // Calculate source scores, ignore non-applicable ones
+            // if there are two extensions with the same score, 
+            // then the first (i.e. highest Extension.ordinal should win)
             Integer score = source.score(type, credentials);
-            if (score != null && !matches.containsKey(score)) {
-                // if there are two extensions with the same score, 
-                // then the first (i.e. highest Extension.ordinal should win)
-                matches.put(score, source);
+            if (score == null || matches.containsKey(score)) {
+                continue;
             }
+            
+            // Check if the source is applicable according to external matcher
+            if (sourceMatcher != null && !sourceMatcher.matches(source)) {
+                continue;
+            }
+            
+            matches.put(score, source);
         }
+        
         // now try all the matches (form best to worst) until we get a conversion 
         for (AuthenticationTokenSource<?,?> source: matches.values()) {
             if (source.produces(type) && source.consumes(credentials)) { // redundant test, but for safety
