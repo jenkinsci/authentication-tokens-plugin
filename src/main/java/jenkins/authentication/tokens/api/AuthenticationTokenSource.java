@@ -122,6 +122,27 @@ public abstract class AuthenticationTokenSource<T, C extends Credentials>
     }
 
     /**
+     * Checks if this source fits the specified context.
+     * @param context the context that an authentication token is required in.
+     * @return {@code true} if and only if this source fits the specified context.
+     * @since 1.2
+     */
+    @SuppressWarnings("unchecked")
+    public final boolean fits(AuthenticationTokenContext<?> context) {
+        return produces(context.getTokenClass()) && isFit((AuthenticationTokenContext<? super T>) context);
+    }
+
+    /**
+     * Checks if this source fits the specified context, override this method
+     * @param context the context that an authentication token is required in.
+     * @return {@code true} if and only if this source fits the specified context.
+     * @since 1.2
+     */
+    protected boolean isFit(AuthenticationTokenContext<? super T> context) {
+        return true;
+    }
+
+    /**
      * Score the goodness of match.
      * @param tokenClass the token class.
      * @param credentials the credentials instance.
@@ -155,5 +176,18 @@ public abstract class AuthenticationTokenSource<T, C extends Credentials>
             }
         }
         return ((int)producerScore) << 16 | (int)consumerScore;
+    }
+
+    /**
+     * Score the goodness of match.
+     *
+     * @param context     the context that an authentication token is required in.
+     * @param credentials the credentials instance.
+     * @return the match score (higher the better) or {@code null} if not a match.
+     * @since 1.2
+     */
+    /*package*/
+    final Integer score(AuthenticationTokenContext<?> context, Credentials credentials) {
+        return fits(context) ? score(context.getTokenClass(), credentials) : null;
     }
 }
