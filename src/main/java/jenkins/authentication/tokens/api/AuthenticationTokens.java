@@ -32,7 +32,6 @@ import jenkins.model.Jenkins;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -67,10 +66,22 @@ public final class AuthenticationTokens {
      * @return a matcher for the type of token
      */
     public static <T> CredentialsMatcher matcher(Class<T> tokenClass) {
+        return matcher(new AuthenticationTokenContext<T>(tokenClass));
+    }
+
+    /**
+     * Builds a matcher for credentials that can be converted into the supplied token type.
+     *
+     * @param context    the context that an authentication token is required in.
+     * @param <T>        the type of token.
+     * @return a matcher for the type of token.
+     * @since 1.2
+     */
+    public static <T> CredentialsMatcher matcher(AuthenticationTokenContext<T> context) {
         List<CredentialsMatcher> matchers = new ArrayList<CredentialsMatcher>();
         for (AuthenticationTokenSource<?, ?> source : Jenkins.getInstance()
                 .getExtensionList(AuthenticationTokenSource.class)) {
-            if (source.produces(tokenClass)) {
+            if (source.fits(context)) {
                 matchers.add(source.matcher());
             }
         }
@@ -94,12 +105,31 @@ public final class AuthenticationTokens {
         if (credentials == null) {
             return null;
         }
+        return convert(new AuthenticationTokenContext<T>(type), credentials);
+    }
+
+    /**
+     * Converts the supplied credentials into the specified token.
+     *
+     * @param context     the context that an authentication token is required in.
+     * @param credentials the credentials instance to convert.
+     * @param <T>         the type of token to convert to.
+     * @param <C>         the type of credentials to convert,
+     * @return the token or {@code null} if the credentials could not be converted.
+     * @since 1.2
+     */
+    @SuppressWarnings("unchecked")
+    @CheckForNull
+    public static <T, C extends Credentials> T convert(@NonNull AuthenticationTokenContext<T> context, @CheckForNull C credentials) {
+        if (credentials == null) {
+            return null;
+        }
         // we want the best match first
         SortedMap<Integer,AuthenticationTokenSource> matches = new TreeMap<Integer, AuthenticationTokenSource>(
                 Collections.reverseOrder());
         for (AuthenticationTokenSource<?, ?> source : Jenkins.getInstance()
                 .getExtensionList(AuthenticationTokenSource.class)) {
-            Integer score = source.score(type, credentials);
+            Integer score = source.score(context, credentials);
             if (score != null && !matches.containsKey(score)) {
                 // if there are two extensions with the same score, 
                 // then the first (i.e. highest Extension.ordinal should win)
@@ -108,7 +138,7 @@ public final class AuthenticationTokens {
         }
         // now try all the matches (form best to worst) until we get a conversion 
         for (AuthenticationTokenSource<?,?> source: matches.values()) {
-            if (source.produces(type) && source.consumes(credentials)) { // redundant test, but for safety
+            if (source.produces(context.getTokenClass()) && source.consumes(credentials)) { // redundant test, but for safety
                 AuthenticationTokenSource<? extends T, ? super C> s =
                         (AuthenticationTokenSource<? extends T, ? super C>) source;
                 T token = null;
@@ -118,7 +148,7 @@ public final class AuthenticationTokens {
                     LogRecord lr = new LogRecord(Level.FINE,
                             "Could not convert credentials {0} into token of type {1} using source {2}: {3}");
                     lr.setThrown(e);
-                    lr.setParameters(new Object[]{credentials, type, s, e.getMessage()});
+                    lr.setParameters(new Object[]{credentials, context.getTokenClass(), s, e.getMessage()});
                     LOGGER.log(lr);
                 }
                 if (token != null) {
@@ -129,4 +159,5 @@ public final class AuthenticationTokens {
         
         return null;
     }
+
 }
