@@ -33,7 +33,10 @@ public class AuthenticationTokenContextTest {
         UsernamePasswordCredentials p =
                 new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "test", null, "bob", "secret");
         assertThat(AuthenticationTokens.matcher(context).matches(p), is(true));
-        assertThat(AuthenticationTokens.matcher(context).matches(new CertificateCredentialsImpl(CredentialsScope.GLOBAL, "test2", null, null, new CertificateCredentialsImpl.UploadedKeyStoreSource(null))), is(
+        CertificateCredentialsImpl q = new CertificateCredentialsImpl(CredentialsScope.GLOBAL, "test2", null, null,
+                new CertificateCredentialsImpl.UploadedKeyStoreSource(null));
+        assertThat(AuthenticationTokens.matcher(context).matches(
+                q), is(
                 false));
         
         HttpAuthenticator authenticator = AuthenticationTokens.convert(context, p);
@@ -63,7 +66,12 @@ public class AuthenticationTokenContextTest {
         assertThat(authenticator, notNullValue());
         assertThat(authenticator, instanceOf(DigestAuthenticator.class));
         assertThat(authenticator.getHeader("foo:"), is(Util.getDigestOf("foo:bob:secret")));
-        
+
+        authenticator = AuthenticationTokens.convert(context, q, p);
+        assertThat(authenticator, notNullValue());
+        assertThat(authenticator, instanceOf(DigestAuthenticator.class));
+        assertThat(authenticator.getHeader("foo:"), is(Util.getDigestOf("foo:bob:secret")));
+
         context = AuthenticationTokenContext.builder(HttpAuthenticator.class)
                 .with(HttpAuthenticator.class, "certificate")
                 .build();

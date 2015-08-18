@@ -28,16 +28,18 @@ import com.cloudbees.plugins.credentials.CredentialsMatcher;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import jenkins.model.Jenkins;
-
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 
 /**
  * Utility class for manipulating authentication tokens.
@@ -157,6 +159,81 @@ public final class AuthenticationTokens {
             }
         }
         
+        return null;
+    }
+
+    /**
+     * Converts the best match of the supplied credentials into the specified token.
+     *
+     * @param context     the context that an authentication token is required in.
+     * @param credentials the credentials instances to try and convert.
+     * @param <T>         the type of token to convert to.
+     * @param <C>         the type of credentials to convert,
+     * @return the token or {@code null} if the credentials could not be converted.
+     * @since 1.2
+     */
+    @SuppressWarnings("unchecked")
+    @CheckForNull
+    public static <T, C extends Credentials> T convert(@NonNull AuthenticationTokenContext<T> context,
+                                                       @NonNull C... credentials) {
+        return convert(context, Arrays.asList(credentials));
+    }
+
+    /**
+     * Converts the best match of the supplied credentials into the specified token.
+     *
+     * @param context     the context that an authentication token is required in.
+     * @param credentials the credentials instances to try and convert.
+     * @param <T>         the type of token to convert to.
+     * @param <C>         the type of credentials to convert,
+     * @return the token or {@code null} if the credentials could not be converted.
+     * @since 1.2
+     */
+    @SuppressWarnings("unchecked")
+    @CheckForNull
+    public static <T, C extends Credentials> T convert(@NonNull AuthenticationTokenContext<T> context,
+                                                       @NonNull List<C> credentials) {
+        // we want the best match first
+        SortedMap<Integer, Map.Entry<C, AuthenticationTokenSource>> matches =
+                new TreeMap<Integer, Map.Entry<C, AuthenticationTokenSource>>(
+                        Collections.reverseOrder());
+        for (C credential : credentials) {
+            for (AuthenticationTokenSource<?, ?> source : Jenkins.getInstance()
+                    .getExtensionList(AuthenticationTokenSource.class)) {
+                Integer score = source.score(context, credential);
+                if (score != null && !matches.containsKey(score)) {
+                    // if there are two extensions with the same score,
+                    // then the first (i.e. highest Extension.ordinal should win)
+                    // if there are two credentials with the same scoe,
+                    // then the first in the list should win.
+                    matches.put(score, new AbstractMap.SimpleEntry<C, AuthenticationTokenSource>(credential, source));
+                }
+            }
+        }
+        // now try all the matches (form best to worst) until we get a conversion
+        for (Map.Entry<C, AuthenticationTokenSource> entry : matches.values()) {
+            C credential = entry.getKey();
+            AuthenticationTokenSource source = entry.getValue();
+            if (source.produces(context.getTokenClass()) && source
+                    .consumes(credential)) { // redundant test, but for safety
+                AuthenticationTokenSource<? extends T, ? super C> s =
+                        (AuthenticationTokenSource<? extends T, ? super C>) source;
+                T token = null;
+                try {
+                    token = s.convert(credential);
+                } catch (AuthenticationTokenException e) {
+                    LogRecord lr = new LogRecord(Level.FINE,
+                            "Could not convert credentials {0} into token of type {1} using source {2}: {3}");
+                    lr.setThrown(e);
+                    lr.setParameters(new Object[]{credentials, context.getTokenClass(), s, e.getMessage()});
+                    LOGGER.log(lr);
+                }
+                if (token != null) {
+                    return token;
+                }
+            }
+        }
+
         return null;
     }
 
