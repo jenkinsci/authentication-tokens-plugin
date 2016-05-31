@@ -81,7 +81,12 @@ public final class AuthenticationTokens {
      */
     public static <T> CredentialsMatcher matcher(AuthenticationTokenContext<T> context) {
         List<CredentialsMatcher> matchers = new ArrayList<CredentialsMatcher>();
-        for (AuthenticationTokenSource<?, ?> source : Jenkins.getInstance()
+        Jenkins jenkins = Jenkins.getInstance();
+        if(jenkins == null){
+            LOGGER.log("No Jenkins object was found; no match could be made.");
+            return CredentialsMatchers.never();
+        }
+        for (AuthenticationTokenSource<?, ?> source : jenkins
                 .getExtensionList(AuthenticationTokenSource.class)) {
             if (source.fits(context)) {
                 matchers.add(source.matcher());
@@ -129,7 +134,12 @@ public final class AuthenticationTokens {
         // we want the best match first
         SortedMap<Integer,AuthenticationTokenSource> matches = new TreeMap<Integer, AuthenticationTokenSource>(
                 Collections.reverseOrder());
-        for (AuthenticationTokenSource<?, ?> source : Jenkins.getInstance()
+        Jenkins jenkins = Jenkins.getInstance();
+        if(jenkins == null){
+            LOGGER.log("No Jenkins object was found; no conversion could be made.");
+            return null;
+        }
+        for (AuthenticationTokenSource<?, ?> source : jenkins
                 .getExtensionList(AuthenticationTokenSource.class)) {
             Integer score = source.score(context, credentials);
             if (score != null && !matches.containsKey(score)) {
@@ -197,8 +207,14 @@ public final class AuthenticationTokens {
         SortedMap<Integer, Map.Entry<C, AuthenticationTokenSource>> matches =
                 new TreeMap<Integer, Map.Entry<C, AuthenticationTokenSource>>(
                         Collections.reverseOrder());
+                        
+        Jenkins jenkins = Jenkins.getInstance();
+        if(jenkins == null){
+            LOGGER.log("No Jenkins object was found; no conversion could be made.");
+            return null;
+        }
         for (C credential : credentials) {
-            for (AuthenticationTokenSource<?, ?> source : Jenkins.getInstance()
+            for (AuthenticationTokenSource<?, ?> source : jenkins
                     .getExtensionList(AuthenticationTokenSource.class)) {
                 Integer score = source.score(context, credential);
                 if (score != null && !matches.containsKey(score)) {
