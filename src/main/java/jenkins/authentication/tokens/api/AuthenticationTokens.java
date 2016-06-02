@@ -83,7 +83,9 @@ public final class AuthenticationTokens {
         List<CredentialsMatcher> matchers = new ArrayList<CredentialsMatcher>();
         Jenkins jenkins = Jenkins.getInstance();
         if(jenkins == null){
-            LOGGER.log("No Jenkins object was found; no match could be made.");
+            LogRecord lr = new LogRecord(Level.FINE,
+                "No Jenkins object was found; no match could be made.");
+            LOGGER.log(lr);
             return CredentialsMatchers.never();
         }
         for (AuthenticationTokenSource<?, ?> source : jenkins
@@ -136,7 +138,9 @@ public final class AuthenticationTokens {
                 Collections.reverseOrder());
         Jenkins jenkins = Jenkins.getInstance();
         if(jenkins == null){
-            LOGGER.log("No Jenkins object was found; no conversion could be made.");
+            LogRecord lr = new LogRecord(Level.FINE,
+                "No Jenkins object was found; no conversion could be made.");
+            LOGGER.log(lr);
             return null;
         }
         for (AuthenticationTokenSource<?, ?> source : jenkins
@@ -210,7 +214,9 @@ public final class AuthenticationTokens {
                         
         Jenkins jenkins = Jenkins.getInstance();
         if(jenkins == null){
-            LOGGER.log("No Jenkins object was found; no conversion could be made.");
+            LogRecord lr = new LogRecord(Level.FINE,
+                "No Jenkins object was found; no conversion could be made.");
+            LOGGER.log(lr);
             return null;
         }
         for (C credential : credentials) {
