@@ -28,6 +28,7 @@ import com.cloudbees.plugins.credentials.CredentialsMatcher;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionList;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,15 +82,7 @@ public final class AuthenticationTokens {
      */
     public static <T> CredentialsMatcher matcher(AuthenticationTokenContext<T> context) {
         List<CredentialsMatcher> matchers = new ArrayList<CredentialsMatcher>();
-        Jenkins jenkins = Jenkins.getInstance();
-        if(jenkins == null){
-            LogRecord lr = new LogRecord(Level.FINE,
-                "No Jenkins object was found; no match could be made.");
-            LOGGER.log(lr);
-            return CredentialsMatchers.never();
-        }
-        for (AuthenticationTokenSource<?, ?> source : jenkins
-                .getExtensionList(AuthenticationTokenSource.class)) {
+        for (AuthenticationTokenSource<?, ?> source : ExtensionList.lookup(AuthenticationTokenSource.class)) {
             if (source.fits(context)) {
                 matchers.add(source.matcher());
             }
@@ -136,15 +129,8 @@ public final class AuthenticationTokens {
         // we want the best match first
         SortedMap<Integer,AuthenticationTokenSource> matches = new TreeMap<Integer, AuthenticationTokenSource>(
                 Collections.reverseOrder());
-        Jenkins jenkins = Jenkins.getInstance();
-        if(jenkins == null){
-            LogRecord lr = new LogRecord(Level.FINE,
-                "No Jenkins object was found; no conversion could be made.");
-            LOGGER.log(lr);
-            return null;
-        }
-        for (AuthenticationTokenSource<?, ?> source : jenkins
-                .getExtensionList(AuthenticationTokenSource.class)) {
+        
+        for (AuthenticationTokenSource<?, ?> source : ExtensionList.lookup(AuthenticationTokenSource.class)) {
             Integer score = source.score(context, credentials);
             if (score != null && !matches.containsKey(score)) {
                 // if there are two extensions with the same score, 
