@@ -198,16 +198,8 @@ public final class AuthenticationTokens {
                 new TreeMap<Integer, Map.Entry<C, AuthenticationTokenSource>>(
                         Collections.reverseOrder());
                         
-        Jenkins jenkins = Jenkins.getInstance();
-        if(jenkins == null){
-            LogRecord lr = new LogRecord(Level.FINE,
-                "No Jenkins object was found; no conversion could be made.");
-            LOGGER.log(lr);
-            return null;
-        }
         for (C credential : credentials) {
-            for (AuthenticationTokenSource<?, ?> source : jenkins
-                    .getExtensionList(AuthenticationTokenSource.class)) {
+            for (AuthenticationTokenSource<?, ?> source : ExtensionList.lookup(AuthenticationTokenSource.class)) {
                 Integer score = source.score(context, credential);
                 if (score != null && !matches.containsKey(score)) {
                     // if there are two extensions with the same score,
