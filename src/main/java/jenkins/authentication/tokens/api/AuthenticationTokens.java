@@ -28,6 +28,7 @@ import com.cloudbees.plugins.credentials.CredentialsMatcher;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.ExtensionList;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,8 +82,7 @@ public final class AuthenticationTokens {
      */
     public static <T> CredentialsMatcher matcher(AuthenticationTokenContext<T> context) {
         List<CredentialsMatcher> matchers = new ArrayList<CredentialsMatcher>();
-        for (AuthenticationTokenSource<?, ?> source : Jenkins.getInstance()
-                .getExtensionList(AuthenticationTokenSource.class)) {
+        for (AuthenticationTokenSource<?, ?> source : ExtensionList.lookup(AuthenticationTokenSource.class)) {
             if (source.fits(context)) {
                 matchers.add(source.matcher());
             }
@@ -129,8 +129,8 @@ public final class AuthenticationTokens {
         // we want the best match first
         SortedMap<Integer,AuthenticationTokenSource> matches = new TreeMap<Integer, AuthenticationTokenSource>(
                 Collections.reverseOrder());
-        for (AuthenticationTokenSource<?, ?> source : Jenkins.getInstance()
-                .getExtensionList(AuthenticationTokenSource.class)) {
+        
+        for (AuthenticationTokenSource<?, ?> source : ExtensionList.lookup(AuthenticationTokenSource.class)) {
             Integer score = source.score(context, credentials);
             if (score != null && !matches.containsKey(score)) {
                 // if there are two extensions with the same score, 
@@ -197,9 +197,9 @@ public final class AuthenticationTokens {
         SortedMap<Integer, Map.Entry<C, AuthenticationTokenSource>> matches =
                 new TreeMap<Integer, Map.Entry<C, AuthenticationTokenSource>>(
                         Collections.reverseOrder());
+                        
         for (C credential : credentials) {
-            for (AuthenticationTokenSource<?, ?> source : Jenkins.getInstance()
-                    .getExtensionList(AuthenticationTokenSource.class)) {
+            for (AuthenticationTokenSource<?, ?> source : ExtensionList.lookup(AuthenticationTokenSource.class)) {
                 Integer score = source.score(context, credential);
                 if (score != null && !matches.containsKey(score)) {
                     // if there are two extensions with the same score,
