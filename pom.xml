@@ -40,7 +40,7 @@
   <description>
     This plugin provides an API for converting credentials into authentication tokens in Jenkins.
   </description>
-  <url>http://wiki.jenkins-ci.org/display/JENKINS/Authentication+Tokens+API+Plugin</url>
+  <url>https://github.com/jenkinsci/authentication-tokens-plugin</url>
   <licenses>
     <license>
       <name>The MIT license</name>
