@@ -1,7 +1,18 @@
 Jenkins Authentication Tokens API Plugin
 =====================
 
-Read more: [http://wiki.jenkins-ci.org/display/JENKINS/Authentication+Tokens+API+Plugin](http://wiki.jenkins-ci.org/display/JENKINS/Authentication+Tokens+API+Plugin)
+This plugin provides an API for converting credentials into
+authentication tokens in Jenkins.
+
+  
+The plugin provides concepts for:
+
+-   Authentication Token Source: converts a type of Credentials into
+    authentication tokens of a certain type.
+-   Authentication Token Context: used to specify the context in which
+    the token wants to be used through a series of purposes.
+-   AuthenticationTokens utility class to generate matchers and convert
+    credentials into tokens easily. 
 
 Development
 ===========
