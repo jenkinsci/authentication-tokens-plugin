@@ -1,5 +1,7 @@
 ## Changelog
 
+For newer versions, see [GitHub Releases](https://github.com/jenkinsci/authentication-tokens-plugin/releases).
+
 ### Version 1.3 (17/Jun/2016)
 
 -   [JENKINS-35287](https://issues.jenkins-ci.org/browse/JENKINS-35287):
