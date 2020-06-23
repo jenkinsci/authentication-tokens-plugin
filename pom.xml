@@ -33,7 +33,7 @@
   </parent>
 
   <artifactId>authentication-tokens</artifactId>
-  <version>1.4-SNAPSHOT</version>
+  <version>1.4</version>
   <packaging>hpi</packaging>
 
   <name>Authentication Tokens API Plugin</name>
@@ -60,7 +60,7 @@
     <connection>scm:git:git://github.com/jenkinsci/authentication-tokens-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/authentication-tokens-plugin.git</developerConnection>
     <url>http://github.com/jenkinsci/authentication-tokens-plugin</url>
-    <tag>HEAD</tag>
+    <tag>authentication-tokens-1.4</tag>
   </scm>
 
   <properties>
