@@ -29,7 +29,8 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>3.57</version>
+    <version>4.40</version>
+    <relativePath />
   </parent>
 
   <artifactId>authentication-tokens</artifactId>
@@ -37,9 +38,6 @@
   <packaging>hpi</packaging>
 
   <name>Authentication Tokens API Plugin</name>
-  <description>
-    This plugin provides an API for converting credentials into authentication tokens in Jenkins.
-  </description>
   <url>https://github.com/jenkinsci/authentication-tokens-plugin</url>
   <licenses>
     <license>
@@ -64,8 +62,7 @@
   </scm>
 
   <properties>
-    <jenkins.version>2.176.4</jenkins.version>
-    <java.level>8</java.level>
+    <jenkins.version>2.303.1</jenkins.version>
   </properties>
 
   <repositories>
@@ -81,11 +78,22 @@
     </pluginRepository>
   </pluginRepositories>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.jenkins.tools.bom</groupId>
+        <artifactId>bom-2.303.x</artifactId>
+        <version>1409.v7659b_c072f18</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1.22</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>

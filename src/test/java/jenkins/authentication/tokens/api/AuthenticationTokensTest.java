@@ -27,7 +27,7 @@ public class AuthenticationTokensTest {
         UsernamePasswordCredentials p =
                 new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "test", null, "bob", "secret");
         assertThat(AuthenticationTokens.matcher(DigestToken.class).matches(p), is(true));
-        assertThat(AuthenticationTokens.matcher(DigestToken.class).matches(new CertificateCredentialsImpl(CredentialsScope.GLOBAL, "test2", null, null, new CertificateCredentialsImpl.UploadedKeyStoreSource(null))), is(false));
+        assertThat(AuthenticationTokens.matcher(DigestToken.class).matches(new CertificateCredentialsImpl(CredentialsScope.GLOBAL, "test2", null, null, new CertificateCredentialsImpl.UploadedKeyStoreSource((String) null))), is(false));
         assertThat(AuthenticationTokens.convert(DigestToken.class, p),
                 is(new DigestToken(Util.getDigestOf("bob:secret"))));
     }

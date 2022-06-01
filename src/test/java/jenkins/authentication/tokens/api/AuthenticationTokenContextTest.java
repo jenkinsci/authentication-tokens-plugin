@@ -34,7 +34,7 @@ public class AuthenticationTokenContextTest {
                 new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "test", null, "bob", "secret");
         assertThat(AuthenticationTokens.matcher(context).matches(p), is(true));
         CertificateCredentialsImpl q = new CertificateCredentialsImpl(CredentialsScope.GLOBAL, "test2", null, null,
-                new CertificateCredentialsImpl.UploadedKeyStoreSource(null));
+                new CertificateCredentialsImpl.UploadedKeyStoreSource((String) null));
         assertThat(AuthenticationTokens.matcher(context).matches(
                 q), is(
                 false));
