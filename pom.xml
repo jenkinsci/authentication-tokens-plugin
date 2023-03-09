@@ -37,9 +37,6 @@
   <packaging>hpi</packaging>
 
   <name>Authentication Tokens API Plugin</name>
-  <description>
-    This plugin provides an API for converting credentials into authentication tokens in Jenkins.
-  </description>
   <url>https://github.com/jenkinsci/authentication-tokens-plugin</url>
   <licenses>
     <license>
