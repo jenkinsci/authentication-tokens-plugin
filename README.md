@@ -42,7 +42,7 @@ To install:
 Plugin releases
 ---------------
 
-    mvn release:prepare release:perform -B
+Releases are performed [automatically](https://www.jenkins.io/doc/developer/publishing/releasing-cd/) for merged pull requests with interesting labels.
 
 
 License
