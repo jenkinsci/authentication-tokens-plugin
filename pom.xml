@@ -29,7 +29,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.40</version>
+    <version>4.57</version>
     <relativePath />
   </parent>
 
@@ -64,7 +64,7 @@
   <properties>
     <revision>1</revision>
     <changelist>999999-SNAPSHOT</changelist>
-    <jenkins.version>2.303.1</jenkins.version>
+    <jenkins.version>2.387.1</jenkins.version>
   </properties>
 
   <repositories>
@@ -84,8 +84,8 @@
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.303.x</artifactId>
-        <version>1409.v7659b_c072f18</version>
+        <artifactId>bom-2.387.x</artifactId>
+        <version>1948.veb_1fd345d3a_e</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
@@ -100,14 +100,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>1.9.5</version>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.hamcrest</groupId>
-          <artifactId>hamcrest-core</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
 
@@ -118,6 +111,7 @@
         <artifactId>maven-hpi-plugin</artifactId>
         <executions>
           <execution>
+            <id>generate-taglib-interface</id>
             <goals>
               <goal>generate-taglib-interface</goal>
             </goals>
