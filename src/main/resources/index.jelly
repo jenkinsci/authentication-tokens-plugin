@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+    This plugin provides an API for converting credentials into authentication tokens in Jenkins.
+</div>
