@@ -103,27 +103,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.jenkins-ci.tools</groupId>
-        <artifactId>maven-hpi-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>generate-taglib-interface</id>
-            <goals>
-              <goal>generate-taglib-interface</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <systemProperties>
-            <hudson.bundled.plugins>${basedir}/work/plugins/credentials.hpl</hudson.bundled.plugins>
-          </systemProperties>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
 </project>
