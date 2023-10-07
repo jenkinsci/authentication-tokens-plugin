@@ -64,7 +64,7 @@
   <properties>
     <revision>1</revision>
     <changelist>999999-SNAPSHOT</changelist>
-    <jenkins.version>2.387.1</jenkins.version>
+    <jenkins.version>2.387.3</jenkins.version>
   </properties>
 
   <repositories>
