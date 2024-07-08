@@ -1,11 +1,14 @@
 package jenkins.authentication.tokens.api;
 
 import com.cloudbees.plugins.credentials.CredentialsScope;
+import com.cloudbees.plugins.credentials.SecretBytes;
 import com.cloudbees.plugins.credentials.common.UsernamePasswordCredentials;
 import com.cloudbees.plugins.credentials.impl.CertificateCredentialsImpl;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
+
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,7 +20,10 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import java.io.ByteArrayOutputStream;
+import java.security.KeyStore;
 
 /**
  * @author Stephen Connolly
@@ -27,14 +33,14 @@ public class AuthenticationTokenContextTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void smokes() {
+    public void smokes() throws Exception {
         AuthenticationTokenContext<HttpAuthenticator> context = AuthenticationTokenContext.builder(HttpAuthenticator.class)
                 .build();
         UsernamePasswordCredentials p =
                 new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "test", null, "bob", "secret");
         assertThat(AuthenticationTokens.matcher(context).matches(p), is(true));
-        CertificateCredentialsImpl q = new CertificateCredentialsImpl(CredentialsScope.GLOBAL, "test2", null, null,
-                new CertificateCredentialsImpl.UploadedKeyStoreSource((String) null));
+        CertificateCredentialsImpl q = new CertificateCredentialsImpl(CredentialsScope.GLOBAL, "test2", null, "password",
+                new CertificateCredentialsImpl.UploadedKeyStoreSource(null, dummyPKCS12Store("password")));
         assertThat(AuthenticationTokens.matcher(context).matches(
                 q), is(
                 false));
@@ -208,5 +214,12 @@ public class AuthenticationTokenContextTest {
             return context.canHave(HttpAuthenticator.class, "basic");
         }
     }
-    
+
+    private static SecretBytes dummyPKCS12Store(String password) throws Exception {
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        ks.load(null, password.toCharArray());
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ks.store(bos, password.toCharArray());
+        return SecretBytes.fromBytes(bos.toByteArray());
+    }
 }
