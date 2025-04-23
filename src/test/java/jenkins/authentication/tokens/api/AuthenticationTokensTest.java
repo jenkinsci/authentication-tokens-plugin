@@ -8,32 +8,30 @@ import com.cloudbees.plugins.credentials.impl.CertificateCredentialsImpl;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import java.io.ByteArrayOutputStream;
 import java.security.KeyStore;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+
 /**
  * @author Stephen Connolly
  */
-public class AuthenticationTokensTest {
-    
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class AuthenticationTokensTest {
 
     @Test
-    public void smokes() throws Exception {
+    void smokes(JenkinsRule j) throws Exception {
         UsernamePasswordCredentials p =
                 new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL, "test", null, "bob", "secret");
-        StandardCertificateCredentials cc = new CertificateCredentialsImpl(CredentialsScope.GLOBAL, "test2", null, "password", 
+        StandardCertificateCredentials cc = new CertificateCredentialsImpl(CredentialsScope.GLOBAL, "test2", null, "password",
                     new CertificateCredentialsImpl.UploadedKeyStoreSource(null, dummyPKCS12Store("password")));
-        
+
         assertThat(AuthenticationTokens.matcher(DigestToken.class).matches(p), is(true));
         assertThat(AuthenticationTokens.matcher(DigestToken.class).matches(cc), is(false));
         assertThat(AuthenticationTokens.convert(DigestToken.class, p),

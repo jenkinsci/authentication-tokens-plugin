@@ -5,35 +5,33 @@ import com.cloudbees.plugins.credentials.SecretBytes;
 import com.cloudbees.plugins.credentials.common.UsernamePasswordCredentials;
 import com.cloudbees.plugins.credentials.impl.CertificateCredentialsImpl;
 import com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
-
 import org.apache.commons.codec.binary.Base64;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
+import java.io.ByteArrayOutputStream;
+import java.security.KeyStore;
+import java.util.Objects;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import java.io.ByteArrayOutputStream;
-import java.security.KeyStore;
 
 /**
  * @author Stephen Connolly
  */
-public class AuthenticationTokenContextTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class AuthenticationTokenContextTest {
 
     @Test
-    public void smokes() throws Exception {
+    void smokes(JenkinsRule j) throws Exception {
         AuthenticationTokenContext<HttpAuthenticator> context = AuthenticationTokenContext.builder(HttpAuthenticator.class)
                 .build();
         UsernamePasswordCredentials p =
@@ -44,30 +42,30 @@ public class AuthenticationTokenContextTest {
         assertThat(AuthenticationTokens.matcher(context).matches(
                 q), is(
                 false));
-        
+
         HttpAuthenticator authenticator = AuthenticationTokens.convert(context, p);
         assertThat(authenticator, notNullValue());
         assertThat(authenticator, instanceOf(HttpAuthenticator.class));
         assertThat(authenticator.getHeader("foo:"), anyOf(is(Util.getDigestOf("foo:bob:secret")),
                 is(Base64.encodeBase64String("bob:secret".getBytes()))));
-        
+
         context = AuthenticationTokenContext.builder(HttpAuthenticator.class)
                 .with(HttpAuthenticator.class, "basic")
                 .build();
 
         assertThat(AuthenticationTokens.matcher(context).matches(p), is(true));
-        
+
         authenticator = AuthenticationTokens.convert(context, p);
         assertThat(authenticator, notNullValue());
         assertThat(authenticator, instanceOf(BasicAuthenticator.class));
         assertThat(authenticator.getHeader("foo:"), is(Base64.encodeBase64String("bob:secret".getBytes())));
-        
+
         context = AuthenticationTokenContext.builder(HttpAuthenticator.class)
                 .with(HttpAuthenticator.class, "digest")
                 .build();
 
         assertThat(AuthenticationTokens.matcher(context).matches(p), is(true));
-        
+
         authenticator = AuthenticationTokens.convert(context, p);
         assertThat(authenticator, notNullValue());
         assertThat(authenticator, instanceOf(DigestAuthenticator.class));
@@ -83,7 +81,7 @@ public class AuthenticationTokenContextTest {
                 .build();
 
         assertThat(AuthenticationTokens.matcher(context).matches(p), is(false));
-        
+
         authenticator = AuthenticationTokens.convert(context, p);
         assertThat(authenticator, nullValue());
     }
@@ -91,7 +89,7 @@ public class AuthenticationTokenContextTest {
     public interface HttpAuthenticator {
         String getHeader(String request);
     }
-    
+
     public static class DigestAuthenticator implements HttpAuthenticator {
         private final String value;
 
@@ -110,7 +108,7 @@ public class AuthenticationTokenContextTest {
 
             DigestAuthenticator that = (DigestAuthenticator) o;
 
-            return !(value != null ? !value.equals(that.value) : that.value != null);
+            return Objects.equals(value, that.value);
 
         }
 
@@ -131,7 +129,7 @@ public class AuthenticationTokenContextTest {
             // we are only running tests, so screw the fact that MD5 is a crappy digest scheme
             return Util.getDigestOf(request + value);
         }
-        
+
     }
 
     public static class BasicAuthenticator implements HttpAuthenticator {
@@ -152,7 +150,7 @@ public class AuthenticationTokenContextTest {
 
             BasicAuthenticator that = (BasicAuthenticator) o;
 
-            return !(value != null ? !value.equals(that.value) : that.value != null);
+            return Objects.equals(value, that.value);
 
         }
 
@@ -194,7 +192,7 @@ public class AuthenticationTokenContextTest {
             return context.canHave(HttpAuthenticator.class, "digest");
         }
     }
-    
+
     @TestExtension
     public static class UserPassToBasic extends AuthenticationTokenSource<BasicAuthenticator, UsernamePasswordCredentials> {
 
