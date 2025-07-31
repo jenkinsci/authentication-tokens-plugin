@@ -31,7 +31,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.OverrideMustInvoke;
 import edu.umd.cs.findbugs.annotations.When;
 import hudson.ExtensionPoint;
-import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang3.ClassUtils;
 
 /**
  * Converts {@link Credentials} into authentication tokens
